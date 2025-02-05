@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { BookOpen, RefreshCw, Plus, Mic } from 'lucide-react';
+import { BookOpen, RefreshCw, Plus, Mic, Volume2 } from 'lucide-react';
 import { generateSentences } from './utils/gemini';
 import { evaluateAnswer } from './utils/gemini';
-import { startSpeechRecognition } from './utils/speech';
+import { startSpeechRecognition, speakText } from './utils/speech';
 import { Sentence, GeneratedSentence } from './types';
 import GeneratorModal from './components/GeneratorModal';
 
@@ -30,6 +30,7 @@ function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   useEffect(() => {
     fetchSentences();
@@ -219,6 +220,19 @@ function App() {
     }
   };
 
+  const handleSpeak = async (text: string, lang: string) => {
+    if (isSpeaking) return;
+    
+    setIsSpeaking(true);
+    try {
+      await speakText(text, lang);
+    } catch (error) {
+      console.error('Speech synthesis error:', error);
+    } finally {
+      setIsSpeaking(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -323,7 +337,21 @@ function App() {
 
           {currentSentence && (
             <div className="bg-gray-50 rounded-lg p-4 md:p-6 my-4 md:my-6">
-              <p className="text-lg md:text-xl mb-4 text-gray-800">{currentSentence.japanese}</p>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-lg md:text-xl text-gray-800">{currentSentence.japanese}</p>
+                <button
+                  onClick={() => handleSpeak(currentSentence.japanese, 'ja-JP')}
+                  disabled={isSpeaking}
+                  className={`ml-2 p-2 rounded-full ${
+                    isSpeaking
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  } text-white transition-colors`}
+                  title="音声で読み上げ"
+                >
+                  <Volume2 className="w-5 h-5" />
+                </button>
+              </div>
               
               <div className="flex flex-col md:flex-row gap-2 md:gap-4 mb-4">
                 <input

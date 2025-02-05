@@ -41,3 +41,20 @@ export function startSpeechRecognition(
     onError();
   }
 }
+
+export function speakText(text: string, lang: string = 'ja-JP') {
+  return new Promise<void>((resolve, reject) => {
+    if (!('speechSynthesis' in window)) {
+      alert('このブラウザは音声合成をサポートしていません。');
+      reject(new Error('Speech synthesis not supported'));
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    utterance.onend = () => resolve();
+    utterance.onerror = (event) => reject(event);
+    
+    window.speechSynthesis.speak(utterance);
+  });
+}
