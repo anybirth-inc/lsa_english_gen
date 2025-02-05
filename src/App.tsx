@@ -122,7 +122,7 @@ function App() {
         }
       }
 
-      const batchSize = 1;
+      const batchSize = 10;
       const batches = [];
       for (let i = 0; i < combinations.length; i += batchSize) {
         batches.push(combinations.slice(i, i + batchSize));
